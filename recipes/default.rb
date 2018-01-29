@@ -17,11 +17,6 @@ chocoupgrades_withlogging 'make dir' do
   action :rmdir
 end
 
-# chocoupgrades_withlogging 'install pkg' do
-#   pkg 'curl'
-#   action :install
-# end
-
 chocoupgrades_withlogging 'install git' do
   pkg 'git'
   action :upgrade

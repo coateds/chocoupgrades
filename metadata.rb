@@ -4,8 +4,10 @@ maintainer_email 'you@example.com'
 license 'All Rights Reserved'
 description 'Installs/Configures chocoupgrades'
 long_description 'Installs/Configures chocoupgrades'
-version '1.0.0'
+version '1.1.0'
 chef_version '>= 12.1' if respond_to?(:chef_version)
+
+# v1.1.0  Add :install and :upgrade actions +documentation
 
 # v1.0.0  change :install symbol/attribute/method to :upgrade
 
