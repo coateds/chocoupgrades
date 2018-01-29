@@ -4,7 +4,7 @@
 property :dir, String
 property :pkg, String
 
-action :install do
+action :upgrade do
   chocolatey_package new_resource.pkg do
     action :upgrade
     notifies :run, 'ruby_block[LogPkgMsg]', :immediate

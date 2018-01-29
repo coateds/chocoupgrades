@@ -24,15 +24,15 @@ end
 
 chocoupgrades_withlogging 'install git' do
   pkg 'git'
-  action :install
+  action :upgrade
 end
 
 chocoupgrades_withlogging 'install VSCode' do
   pkg 'visualstudiocode'
-  action :install
+  action :upgrade
 end
 
 chocoupgrades_withlogging 'install ChefDK' do
   pkg 'chefdk'
-  action :install
+  action :upgrade
 end
