@@ -50,4 +50,99 @@ action :rmdir do
 end
 ```
 
-The first line defines a property `dir` that is supplied from the calling resource block in a recipe.
+The first line defines a property `dir` that is supplied from the calling resource block in a recipe. The calling resource blocks will look like this:
+
+```ruby
+chocoupgrades_withlogging 'make dir' do
+  dir 'c:\MyDir'
+  action :mkdir
+end
+
+chocoupgrades_withlogging 'remove dir' do
+  dir 'c:\MyDir'
+  action :rmdir
+end
+```
+
+A couple of rules about custom resources:
+1. Call a resouce with [cookbook_name]_[resourcefile_name]. However, it appears that the cookbook name cannot have any hyphens in it. (I still need to confirm this)
+2. All resouce blocks must be encapsulated in action blocks. (In this case :mkdir and :rmdir)
+3. Properties are passed as options to the resource block. In this case `dir`
+4. references to the passed property now takes the form: `new_resource.[prop_name]
+5. The default action is the first action in the resource file.
+
+The big advantage (solution) here was the ability to use the property (dir) in both the directory resource block and the ruby block that appends to the log. Both of these blocks appear to be running in the execution/convergence phase.
+
+Once the logic for handling multiple resouces was solved, it was time to move on to chocolatey_package resources. I built three actions, :install, :upgrade and :uninstall.
+
+* use :install in this process to go to a specific version
+* use :upgrade to go to the latest version (whether or not ANY version is installed)
+
+```ruby
+property :pkg, String
+property :ver, String
+
+action :install do
+  chocolatey_package new_resource.pkg do
+    action :install
+    version new_resource.ver.to_s
+    notifies :run, 'ruby_block[LogInstallPkgMsg]', :immediate
+  end
+
+  ruby_block 'LogInstallPkgMsg' do
+    block do
+      logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
+      logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
+      logfile.insert_line_if_no_match('~~~~~~~~~~', "Installed #{new_resource.pkg}")
+      logfile.insert_line_if_no_match('~~~~~~~~~~', '')
+      logfile.write_file
+    end
+    action :nothing
+  end
+end
+
+action :uninstall do
+  chocolatey_package new_resource.pkg do
+    action :uninstall
+    notifies :run, 'ruby_block[LogUninstallPkgMsg]', :immediate
+  end
+
+  ruby_block 'LogUninstallPkgMsg' do
+    block do
+      logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
+      logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
+      logfile.insert_line_if_no_match('~~~~~~~~~~', "Uninstalled #{new_resource.pkg}")
+      logfile.insert_line_if_no_match('~~~~~~~~~~', '')
+      logfile.write_file
+    end
+    action :nothing
+  end
+end
+
+action :upgrade do
+  chocolatey_package new_resource.pkg do
+    action :upgrade
+    notifies :run, 'ruby_block[LogUpgradePkgMsg]', :immediate
+  end
+
+  ruby_block 'LogUpgradePkgMsg' do
+    block do
+      logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
+      logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
+      logfile.insert_line_if_no_match('~~~~~~~~~~', "Upgraded #{new_resource.pkg}")
+      logfile.insert_line_if_no_match('~~~~~~~~~~', '')
+      logfile.write_file
+    end
+    action :nothing
+  end
+end
+```
+
+Call these 3 resources like this:
+```ruby
+chocoupgrades_withlogging 'install notepad++' do
+  pkg 'notepadplusplus'
+  # ver '7.5.3'  --  used only with :install
+  action :upgrade/:uninstall/:install
+end
+```
