@@ -7,30 +7,29 @@
 
 file node['installation-parameters']['log-file'].to_s
 
-chocoupgrades_withlogging 'make dir' do
-  dir 'c:\Booger'
-  action :rmdir
+# chocoupgrades_withlogging 'make dir' do
+#   dir 'c:\Booger'
+#   action :rmdir
+# end
+
+# chocoupgrades_withlogging 'make dir' do
+#   dir 'c:\Boogertu'
+#   action :rmdir
+# end
+
+node['chocoupgrades']['make-directories'].each do |item|
+  chocoupgrades_withlogging 'mkdir' do
+    dir item
+    action :mkdir
+  end
 end
 
-chocoupgrades_withlogging 'make dir' do
-  dir 'c:\Boogertu'
-  action :rmdir
+node['chocoupgrades']['remove-directories'].each do |item|
+  chocoupgrades_withlogging 'rmdir' do
+    dir item
+    action :rmdir
+  end
 end
-
-# chocoupgrades_withlogging 'install git' do
-#   pkg 'git'
-#   action :upgrade
-# end
-#
-# chocoupgrades_withlogging 'install VSCode' do
-#   pkg 'visualstudiocode'
-#   action :upgrade
-# end
-#
-# chocoupgrades_withlogging 'install ChefDK' do
-#   pkg 'chefdk'
-#   action :upgrade
-# end
 
 # loop the array of pkgs to upgrade
 # effectively keeping the pakg to the latest version in chocolatey

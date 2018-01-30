@@ -4,8 +4,10 @@ maintainer_email 'you@example.com'
 license 'All Rights Reserved'
 description 'Installs/Configures chocoupgrades'
 long_description 'Installs/Configures chocoupgrades'
-version '1.1.2'
+version '1.1.3'
 chef_version '>= 12.1' if respond_to?(:chef_version)
+
+# v1.1.3  Add array attributes and matching loops to add and remove directories
 
 # v1.1.2  Test Refactor to upgrade from array in attributes
 
