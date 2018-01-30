@@ -68,11 +68,7 @@ action :mkdir do
 
   ruby_block 'LogDirMsg' do
     block do
-      logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "Created #{new_resource.dir}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', '')
-      logfile.write_file
+      writelog "Created #{new_resource.dir}"
     end
     action :nothing
   end
@@ -86,12 +82,16 @@ action :rmdir do
 
   ruby_block 'LogRmDirMsg' do
     block do
-      logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "Deleted #{new_resource.dir}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', '')
-      logfile.write_file
+      writelog "Deleted #{new_resource.dir}"
     end
     action :nothing
   end
+end
+
+def writelog(msg)
+  logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
+  logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
+  logfile.insert_line_if_no_match('~~~~~~~~~~', "#{msg}")
+  logfile.insert_line_if_no_match('~~~~~~~~~~', '')
+  logfile.write_file
 end

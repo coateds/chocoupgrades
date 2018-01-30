@@ -146,3 +146,7 @@ chocoupgrades_withlogging 'install notepad++' do
   action :upgrade/:uninstall/:install
 end
 ```
+
+What about a refactor so that open/timestamp are in one shared block and empty line/write are in another shared block...
+
+It is possible to def a Fn in the resource file and call it!
