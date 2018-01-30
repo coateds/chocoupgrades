@@ -4,8 +4,10 @@ maintainer_email 'you@example.com'
 license 'All Rights Reserved'
 description 'Installs/Configures chocoupgrades'
 long_description 'Installs/Configures chocoupgrades'
-version '1.1.1'
+version '1.1.2'
 chef_version '>= 12.1' if respond_to?(:chef_version)
+
+# v1.1.2  Test Refactor to upgrade from array in attributes
 
 # v1.1.1  Refactor to eliminate redundant code in the resource file
 
