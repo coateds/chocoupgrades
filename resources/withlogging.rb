@@ -24,9 +24,11 @@ action :install do
 end
 
 # Uninstall the pkg
+# uninstall has be deprecated for chocolatey_package
+# use remove instead
 action :uninstall do
   chocolatey_package new_resource.pkg do
-    action :uninstall
+    action :remove
     notifies :run, 'ruby_block[LogUninstallPkgMsg]', :immediate
   end
 

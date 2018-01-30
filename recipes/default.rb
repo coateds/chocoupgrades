@@ -40,3 +40,11 @@ node['chocoupgrades']['upgrade-pkgs'].each do |item|
     action :upgrade
   end
 end
+
+# Remove packages in the array attribute
+node['chocoupgrades']['remove-pkgs'].each do |item|
+  chocoupgrades_withlogging 'remove' do
+    pkg item
+    action :uninstall
+  end
+end

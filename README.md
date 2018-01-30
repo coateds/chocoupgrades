@@ -204,3 +204,15 @@ node['chocoupgrades']['upgrade-pkgs'].each do |item|
   end
 end
 ```
+
+Within attributes for a node, role or environment on a Chef server, the .json format will look like:
+```json
+"chocoupgrades": {
+  "upgrade-pkgs": [
+    "visualstudiocode",
+    "git",
+    "chefdk",
+    "sysinternals",
+    "notepadplusplus"
+  ],
+```
