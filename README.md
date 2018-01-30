@@ -147,10 +147,6 @@ chocoupgrades_withlogging 'install notepad++' do
 end
 ```
 
-What about a refactor so that open/timestamp are in one shared block and empty line/write are in another shared block...
-
-It is possible to def a Fn in the resource file and call it!
-
 Refactor 1: Move the write (append) file functionality to a function within the resource file. The re-worked :mkdir and :rmdir now look like this:
 
 ```ruby
@@ -191,3 +187,20 @@ def writelog(msg)
 end
 ```
 
+Refactor 2 - create an attribute array of pkgs that should be upgraded (kept up-to-date at the latest version)
+
+In Test-Kitchen, set the Attribute thusly:
+```ruby
+node.default['chocoupgrades']['upgrade-pkgs'] = ['visualstudiocode', 'git', 'chefdk', 'sysinternals', 'notepadplusplus']
+```
+
+Then modify the recipe block to loop the array and upgrade each package
+```ruby
+node['chocoupgrades']['upgrade-pkgs'].each do |item|
+  puts item
+  chocoupgrades_withlogging 'upgrade' do
+    pkg item
+    action :upgrade
+  end
+end
+```

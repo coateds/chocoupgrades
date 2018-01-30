@@ -17,17 +17,27 @@ chocoupgrades_withlogging 'make dir' do
   action :rmdir
 end
 
-chocoupgrades_withlogging 'install git' do
-  pkg 'git'
-  action :upgrade
-end
+# chocoupgrades_withlogging 'install git' do
+#   pkg 'git'
+#   action :upgrade
+# end
+#
+# chocoupgrades_withlogging 'install VSCode' do
+#   pkg 'visualstudiocode'
+#   action :upgrade
+# end
+#
+# chocoupgrades_withlogging 'install ChefDK' do
+#   pkg 'chefdk'
+#   action :upgrade
+# end
 
-chocoupgrades_withlogging 'install VSCode' do
-  pkg 'visualstudiocode'
-  action :upgrade
-end
-
-chocoupgrades_withlogging 'install ChefDK' do
-  pkg 'chefdk'
-  action :upgrade
+# loop the array of pkgs to upgrade
+# effectively keeping the pakg to the latest version in chocolatey
+node['chocoupgrades']['upgrade-pkgs'].each do |item|
+  puts item
+  chocoupgrades_withlogging 'upgrade' do
+    pkg item
+    action :upgrade
+  end
 end
