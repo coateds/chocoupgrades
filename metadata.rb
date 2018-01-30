@@ -4,8 +4,10 @@ maintainer_email 'you@example.com'
 license 'All Rights Reserved'
 description 'Installs/Configures chocoupgrades'
 long_description 'Installs/Configures chocoupgrades'
-version '1.1.0'
+version '1.1.1'
 chef_version '>= 12.1' if respond_to?(:chef_version)
+
+# v1.1.1  Refactor to eliminate redundant code in the resource file
 
 # v1.1.0  Add :install and :upgrade actions +documentation
 

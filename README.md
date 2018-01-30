@@ -150,3 +150,44 @@ end
 What about a refactor so that open/timestamp are in one shared block and empty line/write are in another shared block...
 
 It is possible to def a Fn in the resource file and call it!
+
+Refactor 1: Move the write (append) file functionality to a function within the resource file. The re-worked :mkdir and :rmdir now look like this:
+
+```ruby
+action :mkdir do
+  directory new_resource.dir do
+    action :create
+    notifies :run, 'ruby_block[LogDirMsg]', :immediate
+  end
+
+  ruby_block 'LogDirMsg' do
+    block do
+      writelog "Created #{new_resource.dir}"
+    end
+    action :nothing
+  end
+end
+
+action :rmdir do
+  directory new_resource.dir do
+    action :delete
+    notifies :run, 'ruby_block[LogRmDirMsg]', :immediate
+  end
+
+  ruby_block 'LogRmDirMsg' do
+    block do
+      writelog "Deleted #{new_resource.dir}"
+    end
+    action :nothing
+  end
+end
+
+def writelog(msg)
+  logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
+  logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
+  logfile.insert_line_if_no_match('~~~~~~~~~~', "#{msg}")
+  logfile.insert_line_if_no_match('~~~~~~~~~~', '')
+  logfile.write_file
+end
+```
+

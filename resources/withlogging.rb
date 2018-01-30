@@ -5,6 +5,8 @@ property :dir, String
 property :pkg, String
 property :ver, String
 
+# Install the pkg with version ver
+# Notify the ruby block that calls the write log function
 action :install do
   chocolatey_package new_resource.pkg do
     action :install
@@ -12,54 +14,48 @@ action :install do
     notifies :run, 'ruby_block[LogInstallPkgMsg]', :immediate
   end
 
+  # pass a customized message to the writelog function
   ruby_block 'LogInstallPkgMsg' do
     block do
-      logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "Installed #{new_resource.pkg}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', '')
-      logfile.write_file
+      writelog "Installed #{new_resource.pkg}, Version #{new_resource.ver}"
     end
     action :nothing
   end
 end
 
+# Uninstall the pkg
 action :uninstall do
   chocolatey_package new_resource.pkg do
     action :uninstall
     notifies :run, 'ruby_block[LogUninstallPkgMsg]', :immediate
   end
 
+  # pass a customized message to the writelog function
   ruby_block 'LogUninstallPkgMsg' do
     block do
-      logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "Uninstalled #{new_resource.pkg}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', '')
-      logfile.write_file
+      writelog "Uninstalled #{new_resource.pkg}"
     end
     action :nothing
   end
 end
 
+# upgrade the pkg
 action :upgrade do
   chocolatey_package new_resource.pkg do
     action :upgrade
     notifies :run, 'ruby_block[LogUpgradePkgMsg]', :immediate
   end
 
+  # pass a customized message to the writelog function
   ruby_block 'LogUpgradePkgMsg' do
     block do
-      logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', "Upgraded #{new_resource.pkg}")
-      logfile.insert_line_if_no_match('~~~~~~~~~~', '')
-      logfile.write_file
+      writelog "Upgraded #{new_resource.pkg}"
     end
     action :nothing
   end
 end
 
+# Used for testing the concept
 action :mkdir do
   directory new_resource.dir do
     action :create
@@ -74,6 +70,7 @@ action :mkdir do
   end
 end
 
+# Used for testing the concept
 action :rmdir do
   directory new_resource.dir do
     action :delete
@@ -88,6 +85,10 @@ action :rmdir do
   end
 end
 
+# Appends 3 lines to a log file defined in an attribute
+# 1. timestamp
+# 2. custom message (install, upgrade or uninstall etc)
+# 3. blank line
 def writelog(msg)
   logfile = Chef::Util::FileEdit.new(node['installation-parameters']['log-file'].to_s)
   logfile.insert_line_if_no_match('~~~~~~~~~~', "logged: #{Time.new.strftime('%Y-%m-%d %H:%M:%S')}")
