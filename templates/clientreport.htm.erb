@@ -1,0 +1,146 @@
+<html>
+<head></head>
+<body>
+<!-- A Table of Ohai information -->
+The information in the top half of this page is gathered from Ohai. Simply expand automatic attributes in line with the html.
+<br><br>
+
+<h1>Ohai Information For <%= node['hostname'] %></h1>
+<table cellspacing=2 cellpadding=2>
+  <tr>
+    <td>FQDN</td><td><%= node['fqdn'] %></td>
+  </tr>
+  <tr>
+    <td>Domain:</td><td><%= node['domain'] %></td>
+  </tr>
+  <tr>
+    <td>Platform:</td><td><%= node['platform'] %></td>
+  </tr>
+  <tr>
+    <td>Version:</td><td><%= node['platform_version'] %></td>
+  </tr>
+  <tr>
+    <td>Addresses:</td><td><%= node['ipaddress'] %>, <%= node['macaddress'] %></td>
+  </tr>
+</table>
+<br><hr><br>
+
+<table cellspacing=2 cellpadding=2>
+<th>Chef Information</th>
+<tr>
+  <td>Recipes:</td><td><%= node['recipes'] %></td>
+</tr>
+<tr>
+  <td>Roles:</td><td><%= node['roles'] %></td>
+</tr>
+</table>
+<br><hr><br>
+
+<table cellspacing=2 cellpadding=2>
+<th>System Stats</th>
+<tr>
+  <td>cpu:</td><td><%= node['cpu']['0']['model_name'] %></td>
+</tr>
+<tr>
+  <td>real:</td><td><%= node['cpu']['real'] %></td>
+</tr>
+<tr>
+  <td>cores:</td><td><%= node['cpu']['cores'] %></td>
+</tr>
+<tr>
+  <td>total:</td><td><%= node['cpu']['total'] %></td>
+</tr>
+<tr>
+  <td>c: % used:</td><td><%= node['filesystem']['C:']['percent_used'] %></td>
+</tr>
+<tr>
+  <td>memory:</td><td><%= node['memory']['total'] %></td>
+</tr>
+</table>
+<br><hr><br>
+
+These tables consume the output of PowerShell commands. The powershell_out command and its optional accompanying script block can be inline within the recipe, or encapsulated within a ruby function (def block) and even placed in a library file. Most of the PowerShell processing is in the libraries\helper.rb file.
+<br><br>
+
+Any PowerShell command that returns a table of information can be piped to ConvertTo-Html and easily placed inside an erb file. Further substitutions in Ruby add the borders.
+<br><br>
+
+<table cellspacing=2 cellpadding=2>
+<th>PowerShell Adapter Info</th>
+<tr>
+  <td>NICS</td><td><%= node.run_state['ps-network'] %></td>
+</tr>
+</table>
+
+<br><br>
+
+<table cellspacing=2 cellpadding=2>
+<th>Auto Services not Running</th>
+<tr>
+  <td>Services:</td><td><%= node.run_state['ps-service'] %></td>
+</tr>
+</table>
+
+<br><br>
+
+When returning multiple values from a single powershell_out command, use ConvertTo-Json in PowerShell and JSON.parse in Ruby to pass and object with multiple values.
+
+<br><br>
+
+<table cellspacing=0 cellpadding=2 border=1>
+<th colspan="2" style="text-align: left;">NTP, System and Delta</th>
+<tr>
+  <td>NTP Time:</td><td><%= node.run_state['ntp-obj']['NTPTime'] %></td>
+</tr>
+<tr>
+  <td>SYS Time:</td><td><%= node.run_state['ntp-obj']['SYSTime'] %></td>
+</tr>
+<tr>
+  <td>Delta Time:</td><td><%= node.run_state['ntp-obj']['DIFFTime'] %></td>
+</tr>
+</table>
+
+<br><br>
+
+<table cellspacing=0 cellpadding=2 border=1>
+<th colspan="2">Updates</th>
+<tr>
+  <td>Last Update:</td><td><%= node.run_state['last-update'] %></td>
+</tr>
+</table>
+
+<br><br>
+
+In just getting a text output from the Choco command, there is no simple way to output as html. At some point it might be useful to create a Ruby function to convert a list of strings into a simple html table.
+
+<table cellspacing=0 cellpadding=2 border=1>
+<th colspan="2">Chocolatey Packages</th>
+<tr>
+  <td>Installed:</td>
+  <td><%= node.run_state['chocolist'] %></td>
+</tr>
+<tr>
+  <td>Outdated:</td>
+  <td><%= node.run_state['chocooutdated'] %></td>
+</tr>
+</table>
+
+<br><br>
+
+<b>Directory of C:\</b>
+<%= node.run_state['dirofc'] %>
+
+<br><br>
+
+Pings the domain... Indicates which DNS server responds
+<%= node.run_state['ping-domain'] %>
+
+<br><br>
+
+Type 'ohai' at PS prompt to see the available attributes
+
+Much of this information gleaned from  ruby files here:
+https://github.com/chef/ohai/tree/13485c17da688654890047d1952d9f71e735d162/lib/ohai/plugins/windows
+
+</body>
+</html>

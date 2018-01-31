@@ -147,7 +147,8 @@ chocoupgrades_withlogging 'install notepad++' do
 end
 ```
 
-Refactor 1: Move the write (append) file functionality to a function within the resource file. The re-worked :mkdir and :rmdir now look like this:
+## Refactor 1:
+Move the write (append) file functionality to a function within the resource file. The re-worked :mkdir and :rmdir now look like this:
 
 ```ruby
 action :mkdir do
@@ -187,7 +188,8 @@ def writelog(msg)
 end
 ```
 
-Refactor 2 - create an attribute array of pkgs that should be upgraded (kept up-to-date at the latest version)
+## Refactor 2
+Create an attribute array of pkgs that should be upgraded (kept up-to-date at the latest version)
 
 In Test-Kitchen, set the Attribute thusly:
 ```ruby
@@ -216,3 +218,62 @@ Within attributes for a node, role or environment on a Chef server, the .json fo
     "notepadplusplus"
   ],
 ```
+
+## New functionality
+Build a custom resource to create an html report. The problem to solve is that setting attributes inline for use in a template occurs dueing the compile phase. This is good for consuming the output in a resource that configures the system... either as a guard to decide IF to configure the system or as a parameter with which to configure the system. However, this sequence of execution does NOT work if the goal is to report (in a resource) the new state of the system after the configuration.
+
+The simplest way to ensure (pure ruby) evaluations happen in the desired sequence is to encapsulate them in a ruby_block. One oddity to note is that these blocks seem to have their own scope.
+
+Consider:
+```ruby
+ruby_block 'dir' do
+  block do
+    node.run_state['dirofc'] = ps_dirofc
+  end
+  action :run
+end
+
+def ps_dirofc
+  ps_dirofc_script = <<-EOH
+  get-childitem c:\ | select name,creationtime | convertto-html
+  EOH
+  powershell_out(ps_dirofc_script).stdout.chop.to_s
+end
+```
+
+This does not work within a recipe file. Result is `undefined method 'ps_dirofc'`. It will work to place the function inside the ruby_block. (just below `action :run`) Or, both blocks can be move into a custom resource.
+
+Using the same resource file, I add:
+```ruby
+# runs a PS command (see ps_dirofc fn below)
+# output converted to html
+# stores it in run_state attribute
+# attribute is expanded in html template
+action :createreport do
+  ruby_block 'dir listing of c:' do
+    block do
+      node.run_state['dirofc'] = ps_dirofc
+      node.run_state['dirofc'] = node.run_state['dirofc'].sub '<table>', '<table cellspacing=0 cellpadding=2 border=1>'
+    end
+    action :run
+  end
+
+  template 'c:/scripts/dirofc.htm' do
+    source 'dirofc.htm.erb'
+  end
+end
+
+def ps_dirofc
+  ps_dirofc_script = <<-EOH
+  get-childitem c:\ | select name,creationtime | convertto-html
+  EOH
+  powershell_out(ps_dirofc_script).stdout.chop.to_s
+end
+```
+
+One of my takeways for this exercise has been that a custom resource file seems to have it's own scope. In this case, A ruby block can find a function within a resource file but not within a recipe. I do not explain that at this time. Just noting it.
+
+My interim conclusion... custom resource files work well for overriding the compile/convergence sequence when needed.
+
+## Another kind of attribute?
+node.run_state['name'] can be used to save a value or object between resource blocks, but does not need to be defined in an attribute file or on a Chef Server. In this example I store the output (and even manipulate it) of a powershell command, then utilize this value in the htm.erb template.

@@ -48,3 +48,11 @@ node['chocoupgrades']['remove-pkgs'].each do |item|
     action :uninstall
   end
 end
+
+# Create an html report from a template
+# Many of the attributes in the template are generated from PowerShell snippets
+# Becasue the snippets are all encapsulated in a custom resource with ruby blocks
+# the information is generated AFTER the other resources in this recipe
+chocoupgrades_withlogging 'create report' do
+  action :createreport
+end
